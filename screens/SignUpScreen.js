@@ -48,19 +48,19 @@ const SignUpScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-      console.log('User created successfully:', userCredential.user.uid);
-      
-      // // Optional: Update user profile
-      // await userCredential.user.updateProfile({
-      //   displayName: email.split('@')[0], // Using email prefix as display name
-      // });
+      // Firebase Authentication: Create user with email and password
+      await auth().createUserWithEmailAndPassword(email, password);
 
-      // Navigate to the next screen
-      navigation.navigate('Home'); // Or whatever your next screen is
+      // Optional: Update user profile (for example, set the display name)
+      await auth().currentUser.updateProfile({
+        displayName: email.split('@')[0],  // Using email prefix as display name
+      });
+
+      // Navigate to the Home screen
+      navigation.navigate('Home');
     } catch (error) {
       let errorMessage = 'An error occurred during sign up';
-      
+
       switch (error.code) {
         case 'auth/email-already-in-use':
           errorMessage = 'This email address is already registered';
@@ -80,7 +80,7 @@ const SignUpScreen = ({ navigation }) => {
         default:
           console.error('Sign up error:', error);
       }
-      
+
       Alert.alert('Sign Up Failed', errorMessage);
     } finally {
       setLoading(false);

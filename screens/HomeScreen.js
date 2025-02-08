@@ -12,11 +12,12 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Snackbar} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
   const [tasks, setTasks] = useState([]);
   const [snackMessage, setSnackMessage] = useState('');
   const [visible, setVisible] = useState(false);
@@ -40,6 +41,15 @@ const HomeScreen = () => {
     setNewTask({...newTask, dueDate: currentDate});
   };
 
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('email');
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const showDatepicker = () => {
     setShowDatePicker(true);
   };
@@ -53,6 +63,7 @@ const HomeScreen = () => {
       status: apiTask.status ? 'Complete' : 'Incomplete'
     });
 
+    // view task
     const fetchTasks = async () => {
       try {
         const storedEmail = await AsyncStorage.getItem('email');
@@ -102,6 +113,7 @@ const HomeScreen = () => {
     }
   };
  
+  // create task
   const addTask = async () => {
     const storedEmail = await AsyncStorage.getItem('email'); // get stored email as well
     if (!storedEmail) {
@@ -172,6 +184,7 @@ const HomeScreen = () => {
     setModalVisible(false);
   };
 
+  // delete task
   const deleteTask = taskId => {
     Alert.alert(
       'Delete Task', 
@@ -216,7 +229,8 @@ const HomeScreen = () => {
       ]
     );
   };
-
+  
+  // edit task 
   const updateTask = async () => {
     const storedEmail = await AsyncStorage.getItem('email');
     if (!storedEmail) {
@@ -491,6 +505,10 @@ const HomeScreen = () => {
           </View>
         </View>
       </Modal>
+      <TouchableOpacity style={{display:'flex', flexDirection:'row', justifyContent:'flex-end'}} onPress={logout}>
+        <Icon1 name="logout" size={24} color="#000" style={{marginRight: 10}}/>
+        <Text style={styles.text}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };

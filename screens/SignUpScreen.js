@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -48,15 +49,8 @@ const SignUpScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      // Firebase Authentication: Create user with email and password
       await auth().createUserWithEmailAndPassword(email, password);
-
-      // Optional: Update user profile (for example, set the display name)
-      await auth().currentUser.updateProfile({
-        displayName: email.split('@')[0],  // Using email prefix as display name
-      });
-
-      // Navigate to the Home screen
+      await AsyncStorage.setItem('email', email); 
       navigation.navigate('Home');
     } catch (error) {
       let errorMessage = 'An error occurred during sign up';

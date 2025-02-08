@@ -9,12 +9,15 @@ import {
   Alert,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Snackbar } from 'react-native-paper';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [snackMessage, setSnackMessage] = useState('');
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,7 +25,7 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
-    setErrors({});
+    setErrors({}); // reset
 
     if (!email) {
       setErrors((prev) => ({ ...prev, email: 'Email is required' }));
@@ -39,41 +42,16 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // sign in 
       const userCredential = await auth().signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
       console.log('Login successful!', user);
+      await AsyncStorage.setItem('email', email); 
       navigation.navigate('Home'); // navigate to home after login
     } catch (error) {
-      // error handling
-      let errorMessage = 'An error occurred. Please try again.';
-
-      if (error && error.message) {
-        errorMessage = error.message; 
-      } else if (error && error.code) {
-        switch (error.code) {
-          case 'auth/user-not-found':
-            errorMessage = 'No user found with this email.';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = 'Incorrect password. Please try again.';
-            break;
-          case 'auth/invalid-email':
-            errorMessage = 'Invalid email address.';
-            break;
-          case 'auth/invalid-credential':
-            errorMessage = 'The supplied auth credential is incorrect or malformed.';
-            break;
-          default:
-            errorMessage = 'Login failed. Please try again.';
-            break;
-        }
-      }
-
-      Alert.alert(errorMessage); 
-      console.error('Login failed:', errorMessage); 
+      setErrors((prev)=>({...prev,email:'Incorrect email'}))
+      setErrors((prev)=>({...prev,password:'Incorrect password'}))
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
@@ -108,6 +86,7 @@ const LoginScreen = ({ navigation }) => {
       />
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
+        {/* validate auth details from firebase */}
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={handleLogin}
